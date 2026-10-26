@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary: #14532d;
+    --primary-hover: #052e16;
+    --accent: #166534;
+    --earth: #854d0e;
+    --surface-bg: #f8fafc;
+    --surface-card: #ffffff;
+    --text-headline: #0f172a;
+    --text-body: #1e293b;
+    --text-muted: #475569;
+  }
+
+  /* Browser Surfaces - Themed per Impeccable Design Guidelines */
+  ::selection {
+    background-color: #14532d;
+    color: #ffffff;
+  }
+
+  body {
+    caret-color: #14532d;
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Accessible focus indicators */
+  :focus-visible {
+    outline: 2px solid #14532d;
+    outline-offset: 2px;
+  }
+
+  /* Refined, quiet scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+/* Printable styles for official e-Panchanama draft reports */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-page {
+    box-shadow: none !important;
+    border: 1px solid #475569 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+}
