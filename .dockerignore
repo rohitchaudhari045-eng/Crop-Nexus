@@ -1,0 +1,14 @@
+Client Nexus/
+**/node_modules/
+**/target/
+.git/
+.gitignore
+.env
+.env.*
+**/uploads/
+.vscode/
+.idea/
+*.log
+package-lock.backup.json
+FRONTEND_API_REQUIREMENTS.md
+
