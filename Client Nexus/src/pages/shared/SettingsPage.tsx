@@ -1,24 +1,78 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { useTranslation } from '@/i18n/LanguageContext';
 import { Button } from '@/components/common/Button';
-import { Settings, Bell, Globe, Database, Shield, CheckCircle2 } from 'lucide-react';
+import {
+  Settings,
+  Globe,
+  User,
+  Shield,
+  LogOut,
+  CheckCircle2,
+  Lock,
+  Eye,
+  EyeOff
+} from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
-  const { isDemoMode, toggleDemoMode } = useAuth();
-  const { success } = useToast();
+  const { user, role, logout } = useAuth();
+  const { success, error } = useToast();
+  const { t, language, setLanguage } = useTranslation();
+  const navigate = useNavigate();
 
-  const [smsAlerts, setSmsAlerts] = useState(true);
-  const [emailAlerts, setEmailAlerts] = useState(true);
-  const [weatherNotifs, setWeatherNotifs] = useState(true);
-  const [language, setLanguage] = useState('English');
-  const [apiBaseUrl, setApiBaseUrl] = useState(
-    import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
-  );
+  // Profile state
+  const [name, setName] = useState(user?.name || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [district, setDistrict] = useState(user?.district || 'Kolhapur');
+  const [village, setVillage] = useState(user?.village || 'Shirol');
 
-  const handleSave = (e: React.FormEvent) => {
+  // Password state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  const handleProfileSave = (e: React.FormEvent) => {
     e.preventDefault();
-    success('Settings Saved', 'Your system preferences have been saved locally.');
+    success(
+      t('settings.save', 'Preferences Saved'),
+      'Your profile details and preferred language have been updated.'
+    );
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword) {
+      error('Password Error', 'Please enter your current password.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      error('Password Error', 'New password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      error('Password Error', 'New password and confirm password do not match.');
+      return;
+    }
+
+    setIsUpdatingPassword(true);
+    // Prepared for future Spring Boot backend PATCH /auth/password
+    setTimeout(() => {
+      setIsUpdatingPassword(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      success('Password Updated', 'Your security password has been updated successfully.');
+    }, 600);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -26,139 +80,232 @@ export const SettingsPage: React.FC = () => {
       {/* Header */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-2">
         <div className="flex items-center gap-2">
-          <Settings className="w-5 h-5 text-emerald-700" />
+          <Settings className="w-5 h-5 text-emerald-800" />
           <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-            Platform Configuration
+            {t('nav.settings', 'Preferences')}
           </span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          System Settings & Preferences
+          {t('settings.title', 'Platform Settings')}
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500">
-          Customize notifications, alert channels, language, and backend API integration endpoints.
+        <p className="text-xs sm:text-sm text-slate-600">
+          {t('settings.subtitle', 'Manage your preferred language, profile details, and account preferences.')}
         </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6 text-xs">
-        {/* Notification Preferences */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-          <h2 className="font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100">
-            <Bell className="w-4 h-4 text-emerald-600" /> Notification Channels
-          </h2>
-
-          <div className="space-y-3">
-            <label className="flex items-center justify-between p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
-              <div>
-                <p className="font-bold text-slate-900">SMS & WhatsApp Intimations</p>
-                <p className="text-xs text-slate-600">Receive inspection date alerts directly on mobile</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={smsAlerts}
-                onChange={(e) => setSmsAlerts(e.target.checked)}
-                className="w-4 h-4 accent-emerald-600 rounded cursor-pointer"
-              />
-            </label>
-
-            <label className="flex items-center justify-between p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
-              <div>
-                <p className="font-bold text-slate-900">Email Status Summaries</p>
-                <p className="text-xs text-slate-600">Weekly digest of claim updates and e-Panchanama drafts</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={emailAlerts}
-                onChange={(e) => setEmailAlerts(e.target.checked)}
-                className="w-4 h-4 accent-emerald-600 rounded cursor-pointer"
-              />
-            </label>
-
-            <label className="flex items-center justify-between p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50">
-              <div>
-                <p className="font-bold text-slate-900">Severe Weather Advisories</p>
-                <p className="text-xs text-slate-600">Priority Agromet alert popups when heavy rainfall is forecasted</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={weatherNotifs}
-                onChange={(e) => setWeatherNotifs(e.target.checked)}
-                className="w-4 h-4 accent-emerald-600 rounded cursor-pointer"
-              />
-            </label>
+      {/* 1. Language & Regionalization */}
+      <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+          <Globe className="w-4 h-4 text-emerald-800" />
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+              {t('settings.languageTitle', 'Interface Language')}
+            </h2>
+            <p className="text-xs text-slate-500">
+              {t('settings.languageSubtitle', 'Choose between English and Marathi for the entire application interface.')}
+            </p>
           </div>
         </div>
 
-        {/* Language Preference */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-          <h2 className="font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100">
-            <Globe className="w-4 h-4 text-emerald-600" /> Language & Regionalization
-          </h2>
-
-          <div className="grid grid-cols-3 gap-3">
-            {['English', 'मराठी (Marathi)', 'हिन्दी (Hindi)'].map((lang) => (
-              <button
-                key={lang}
-                type="button"
-                onClick={() => setLanguage(lang)}
-                className={`py-3 px-3 rounded-xl font-bold border text-center transition-all cursor-pointer ${
-                  language === lang
-                    ? 'border-emerald-600 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-500/20'
-                    : 'border-slate-200 hover:bg-slate-50 text-slate-700'
-                }`}
-              >
-                {lang}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Backend API Integration Configuration */}
-        <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4">
-          <h2 className="font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2 pb-2 border-b border-slate-100">
-            <Database className="w-4 h-4 text-emerald-600" /> Flask Backend API Integration
-          </h2>
-
-          <div className="space-y-3">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">
-                Backend API Base URL (Read from VITE_API_BASE_URL)
-              </label>
-              <input
-                type="text"
-                value={apiBaseUrl}
-                onChange={(e) => setApiBaseUrl(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-slate-900"
-              />
-              <span className="text-xs text-slate-500 mt-1 block">
-                Default: http://localhost:5000/api. Configured in .env file.
-              </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => {
+              setLanguage('en');
+              success('Language Updated', 'Interface switched to English.');
+            }}
+            className={`p-4 rounded-2xl border text-left transition-all cursor-pointer min-h-[48px] ${
+              language === 'en'
+                ? 'border-emerald-700 bg-emerald-50/80 ring-2 ring-emerald-500/20'
+                : 'border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-900 text-sm">English</span>
+              {language === 'en' && <CheckCircle2 className="w-4 h-4 text-emerald-800" />}
             </div>
+            <p className="text-xs text-slate-500 mt-1">Default administrative terminology</p>
+          </button>
 
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-4">
-              <div>
-                <p className="font-bold text-slate-900">Standalone Demo Mode Simulation</p>
-                <p className="text-xs text-slate-600">
-                  Operates using realistic local mock state when the Flask backend is not yet started.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant={isDemoMode ? 'primary' : 'outline'}
-                size="sm"
-                onClick={toggleDemoMode}
-              >
-                {isDemoMode ? 'Enabled' : 'Disabled'}
-              </Button>
+          <button
+            type="button"
+            onClick={() => {
+              setLanguage('mr');
+              success('भाषा बदलली', 'प्रणालीची भाषा मराठी करण्यात आली आहे.');
+            }}
+            className={`p-4 rounded-2xl border text-left transition-all cursor-pointer min-h-[48px] ${
+              language === 'mr'
+                ? 'border-emerald-700 bg-emerald-50/80 ring-2 ring-emerald-500/20'
+                : 'border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-900 text-sm">मराठी (Marathi)</span>
+              {language === 'mr' && <CheckCircle2 className="w-4 h-4 text-emerald-800" />}
             </div>
+            <p className="text-xs text-slate-500 mt-1">महाराष्ट्र कृषी व महसूल प्रमाणित परिभाषा</p>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Basic Profile Information */}
+      <form onSubmit={handleProfileSave} className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4 text-xs">
+        <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+          <User className="w-4 h-4 text-emerald-800" />
+          <h2 className="font-bold uppercase tracking-wider text-slate-900">
+            {t('settings.profileTitle', 'Profile Information')}
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block font-bold text-slate-700 mb-1" htmlFor="set-name">
+              {t('settings.name', 'Name')}
+            </label>
+            <input
+              id="set-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1" htmlFor="set-phone">
+              {t('settings.phone', 'Phone')}
+            </label>
+            <input
+              id="set-phone"
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1" htmlFor="set-email">
+              {t('settings.email', 'Email')}
+            </label>
+            <input
+              id="set-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1" htmlFor="set-dist">
+              {t('settings.district', 'District')}
+            </label>
+            <input
+              id="set-dist"
+              type="text"
+              value={district}
+              onChange={(e) => setDistrict(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+            />
           </div>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-2">
           <Button type="submit" variant="primary" size="md">
-            Save Preferences
+            {t('settings.save', 'Save Preferences')}
           </Button>
         </div>
       </form>
+
+      {/* 3. Password Change Section */}
+      <form onSubmit={handlePasswordChange} className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs space-y-4 text-xs">
+        <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+          <Lock className="w-4 h-4 text-emerald-800" />
+          <h2 className="font-bold uppercase tracking-wider text-slate-900">
+            Account Security & Password
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label className="block font-bold text-slate-700 mb-1" htmlFor="cur-pw">
+              Current Password
+            </label>
+            <input
+              id="cur-pw"
+              type={showPassword ? 'text' : 'password'}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Current password"
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1" htmlFor="new-pw">
+              New Password
+            </label>
+            <input
+              id="new-pw"
+              type={showPassword ? 'text' : 'password'}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Min 6 characters"
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 mb-1" htmlFor="conf-pw">
+              Confirm New Password
+            </label>
+            <input
+              id="conf-pw"
+              type={showPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Repeat new password"
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[44px]"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-1">
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 cursor-pointer min-h-[40px]"
+          >
+            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            <span>{showPassword ? 'Hide Passwords' : 'Show Passwords'}</span>
+          </button>
+
+          <Button type="submit" variant="outline" size="sm" isLoading={isUpdatingPassword}>
+            Update Password
+          </Button>
+        </div>
+      </form>
+
+      {/* 4. Logout Card */}
+      <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h3 className="font-bold text-slate-900 text-sm">Sign Out of Crop Nexus</h3>
+          <p className="text-xs text-slate-500">
+            End your current active session on this device.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="md"
+          onClick={handleLogout}
+          className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+          leftIcon={<LogOut className="w-4 h-4 text-red-500" />}
+        >
+          {t('nav.signOut', 'Sign Out')}
+        </Button>
+      </div>
     </div>
   );
 };

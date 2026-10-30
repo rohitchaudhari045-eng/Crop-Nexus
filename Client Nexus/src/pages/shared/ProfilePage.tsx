@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { authApi } from '@/api/authApi';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
-import { User, Phone, Mail, MapPin, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { User, ShieldCheck } from 'lucide-react';
 import { formatDate } from '@/utils/formatters';
 
 export const ProfilePage: React.FC = () => {
   const { user, role } = useAuth();
-  const { success } = useToast();
+  const { success, error } = useToast();
 
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
@@ -17,13 +18,25 @@ export const ProfilePage: React.FC = () => {
   const [village, setVillage] = useState(user?.village || 'Shirol');
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      const updated = await authApi.updateProfile({
+        name: name.trim(),
+        phone: phone.trim(),
+        district,
+        village: village.trim()
+      });
+      if (updated) {
+        localStorage.setItem('crop_nexus_active_user', JSON.stringify({ ...user, ...updated }));
+      }
       success('Profile Updated', 'Your profile details have been saved.');
-    }, 600);
+    } catch {
+      error('Update Failed', 'Failed to save profile changes.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -84,6 +97,7 @@ export const ProfilePage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
                 required
+                disabled
               />
             </div>
 

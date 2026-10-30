@@ -1,27 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { claimsApi } from '@/services/apiService';
-import { ClaimRecord, ClaimStatus } from '@/types';
+import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from '@/i18n/LanguageContext';
+import { claimsApi } from '@/api/claimsApi';
+import { ClaimRecord } from '@/types';
 import { Badge } from '@/components/common/Badge';
-import { Button } from '@/components/common/Button';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Pagination } from '@/components/common/Pagination';
 import { ClaimDetailsModal } from '@/components/claims/ClaimDetailsModal';
-import { formatDate, formatCurrencyINR, formatArea, getDamageCauseLabel } from '@/utils/formatters';
+import { formatDate, formatArea, getDamageCauseLabel } from '@/utils/formatters';
 import {
   Search,
   Filter,
-  FileText,
-  MapPin,
-  Calendar,
-  ExternalLink,
-  Clock,
-  CheckCircle,
-  FileSpreadsheet
+  ExternalLink
 } from 'lucide-react';
 
 export const ClaimTrackingPage: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const { user, role } = useAuth();
+  const { t } = useTranslation();
+
   const [claims, setClaims] = useState<ClaimRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,86 +31,98 @@ export const ClaimTrackingPage: React.FC = () => {
 
   const fetchClaims = async () => {
     setLoading(true);
-    const data = await claimsApi.getAll({
-      status: statusFilter,
-      search: searchQuery
-    });
-    setClaims(data);
-    setLoading(false);
+    try {
+      // If farmer, only show their own private reports
+      const filterParams: { status?: string; search?: string; userId?: string } = {
+        status: statusFilter,
+        search: searchQuery
+      };
+      if (role === 'farmer' && user?.id) {
+        filterParams.userId = user.id;
+      }
 
-    // If claimId is in query param, auto-open details
-    const paramClaimId = searchParams.get('claimId');
-    if (paramClaimId) {
-      const match = data.find((c) => c.id === paramClaimId || c.claimNumber === paramClaimId);
-      if (match) setSelectedClaim(match);
+      const data = await claimsApi.getAll(filterParams);
+      setClaims(data);
+
+      // Auto-open if query param exists
+      const paramClaimId = searchParams.get('claimId');
+      if (paramClaimId) {
+        const match = data.find((c) => c.id === paramClaimId || c.claimNumber === paramClaimId);
+        if (match) setSelectedClaim(match);
+      }
+    } catch (err) {
+      console.warn('Failed to fetch claims:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchClaims();
-  }, [statusFilter]);
+  }, [statusFilter, role, user]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchClaims();
   };
 
-  // Pagination calculation
   const totalPages = Math.ceil(claims.length / pageSize) || 1;
   const paginatedClaims = claims.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const statusTabs = [
+    { id: 'all', label: t('claims.all', 'All Reports') },
+    { id: 'submitted', label: t('claims.statusSubmitted', 'Submitted') },
+    { id: 'inspection_scheduled', label: t('claims.statusScheduled', 'Inspection Scheduled') },
+    { id: 'inspected', label: t('claims.statusInspected', 'Inspected') },
+    { id: 'panchanama_drafted', label: t('claims.statusDraftPanchanama', 'e-Panchanama Ready') },
+    { id: 'approved', label: t('claims.statusApproved', 'Approved') }
+  ];
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Claim Tracking & Registry
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            {role === 'farmer' ? t('claims.title', 'My Crop Damage Reports') : 'Damage Claims Registry'}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Monitor verification lifecycle, officer inspection schedules, and draft e-Panchanama progress.
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            {t('claims.subtitle', 'Track the verification lifecycle, inspection findings, and compensation status.')}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-            Total Records: <strong className="text-slate-900">{claims.length}</strong>
+          <span className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+            Total: <strong className="text-emerald-800">{claims.length}</strong>
           </span>
         </div>
       </div>
 
       {/* Filter and Search Controls Bar */}
       <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Search */}
+        {/* Search Input */}
         <form onSubmit={handleSearch} className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by claim no, crop, village, survey..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-slate-500 text-slate-900"
+            placeholder={t('claims.searchPlaceholder', 'Search by claim no, crop, village, survey...')}
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 min-h-[40px]"
           />
         </form>
 
-        {/* Status Filters */}
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 text-xs">
-          <Filter className="w-4 h-4 text-slate-500 shrink-0" />
-          {[
-            { id: 'all', label: 'All Claims' },
-            { id: 'submitted', label: 'Submitted' },
-            { id: 'inspection_scheduled', label: 'Scheduled' },
-            { id: 'inspected', label: 'Inspected' },
-            { id: 'panchanama_drafted', label: 'Draft Panchanama' },
-            { id: 'approved', label: 'Approved' }
-          ].map((tab) => (
+        {/* Status Filter Tabs - Scrollable on mobile */}
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 text-xs">
+          <Filter className="w-4 h-4 text-slate-400 shrink-0 ml-1" />
+          {statusTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => {
                 setStatusFilter(tab.id);
                 setCurrentPage(1);
               }}
-              className={`px-3 py-1.5 rounded-xl font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+              className={`px-3 py-2 rounded-xl font-bold whitespace-nowrap cursor-pointer transition-colors min-h-[36px] ${
                 statusFilter === tab.id
                   ? 'bg-emerald-800 text-white shadow-xs'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -127,13 +137,13 @@ export const ClaimTrackingPage: React.FC = () => {
       {/* Claims List or Empty State */}
       {paginatedClaims.length === 0 ? (
         <EmptyState
-          title="No Claims Found"
+          title={t('common.noRecords', 'No Records Found')}
           description={
             searchQuery || statusFilter !== 'all'
-              ? 'No damage reports match the selected filters. Try clearing your search.'
+              ? 'No damage reports match the selected filters.'
               : 'You have not submitted any crop damage intimations yet.'
           }
-          actionText="Clear Filters"
+          actionText={t('common.clearFilters', 'Clear Filters')}
           onAction={() => {
             setSearchQuery('');
             setStatusFilter('all');
@@ -141,13 +151,12 @@ export const ClaimTrackingPage: React.FC = () => {
         />
       ) : (
         <div className="space-y-4">
-          <h2 className="sr-only">Registered Claims Grid</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {paginatedClaims.map((claim) => (
               <div
                 key={claim.id}
                 onClick={() => setSelectedClaim(claim)}
-                className="bg-white rounded-3xl p-5 border border-slate-200 hover:border-emerald-400 hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4"
+                className="bg-white rounded-3xl p-5 border border-slate-200 hover:border-emerald-600 hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4 min-h-[220px]"
               >
                 {/* Header */}
                 <div className="space-y-2">
@@ -159,29 +168,29 @@ export const ClaimTrackingPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <h3 className="font-bold text-base text-slate-900">{claim.cropName}</h3>
+                    <h2 className="font-bold text-base text-slate-900">{claim.cropName}</h2>
                     <p className="text-xs text-slate-600">
-                      Gat {claim.surveyNumber} • {claim.village}, {claim.taluka}
+                      Gut {claim.surveyNumber} • {claim.village}, {claim.taluka}
                     </p>
                   </div>
                 </div>
 
-                {/* Calamity Details - Flattened without nested card box */}
+                {/* Calamity Details */}
                 <div className="border-y border-slate-100 py-2.5 text-xs space-y-1.5">
                   <div className="flex justify-between items-center text-slate-600">
-                    <span>Reason:</span>
+                    <span>{t('claims.card.reason', 'Disaster:')}</span>
                     <span className="font-semibold text-slate-900">
                       {getDamageCauseLabel(claim.damageCause)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-slate-600">
-                    <span>Affected Area:</span>
+                    <span>{t('claims.card.affectedArea', 'Affected Area:')}</span>
                     <span className="font-semibold text-emerald-800">
                       {formatArea(claim.affectedAreaAcre)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-slate-600">
-                    <span>Reported Date:</span>
+                    <span>{t('claims.card.reportedDate', 'Reported Date:')}</span>
                     <span className="font-medium text-slate-700">
                       {formatDate(claim.submissionDate)}
                     </span>
@@ -191,8 +200,8 @@ export const ClaimTrackingPage: React.FC = () => {
                 {/* Footer Status and Action */}
                 <div className="pt-1 flex items-center justify-between text-xs">
                   <Badge compensationStatus={claim.compensationStatus} size="sm" />
-                  <span className="text-emerald-800 font-bold flex items-center gap-1 group-hover:underline">
-                    View Details <ExternalLink className="w-3.5 h-3.5" />
+                  <span className="text-emerald-800 font-bold flex items-center gap-1">
+                    {t('claims.card.viewDetails', 'View Details')} <ExternalLink className="w-3.5 h-3.5" />
                   </span>
                 </div>
               </div>

@@ -1,121 +1,111 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, UserRole } from '@/types';
-import { authApi } from '@/services/apiService';
-import { INITIAL_USERS } from '@/services/mockData';
+import { User, UserRole, LoginCredentials, FarmerRegistrationData, AuthResponse } from '@/types';
+import { authApi } from '@/api/authApi';
 
 interface AuthContextType {
   user: User | null;
-  role: UserRole;
+  role: UserRole | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  isDemoMode: boolean;
-  toggleDemoMode: () => void;
-  login: (emailOrPhone: string, password: string, role?: UserRole) => Promise<boolean>;
-  register: (data: { name: string; email: string; phone: string; role: 'farmer' | 'officer'; district: string; village?: string }) => Promise<boolean>;
+  login: (credentials: LoginCredentials) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
+  register: (data: FarmerRegistrationData) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
   logout: () => void;
-  switchRole: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_USER_KEY = 'crop_nexus_active_user';
-const DEMO_MODE_KEY = 'crop_nexus_demo_mode';
+const AUTH_TOKEN_KEY = 'crop_nexus_auth_token';
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
 
-  // Initialize auth state from storage or default to demo farmer
+  // Initialize session from storage
   useEffect(() => {
-    try {
-      const savedDemo = localStorage.getItem(DEMO_MODE_KEY);
-      if (savedDemo !== null) {
-        setIsDemoMode(savedDemo === 'true');
-      }
+    const initializeAuth = async () => {
+      try {
+        const token = localStorage.getItem(AUTH_TOKEN_KEY);
+        const storedUser = localStorage.getItem(AUTH_USER_KEY);
 
-      const savedUser = localStorage.getItem(AUTH_USER_KEY);
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
-      } else {
-        // Default initial session for immediate exploration
-        const defaultUser = INITIAL_USERS[0];
-        setUser(defaultUser);
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(defaultUser));
+        if (token && storedUser) {
+          try {
+            const parsed = JSON.parse(storedUser) as User;
+            // Verify role is strictly 'farmer' or 'officer'
+            if (parsed.role === 'farmer' || parsed.role === 'officer') {
+              setUser(parsed);
+            } else {
+              localStorage.removeItem(AUTH_USER_KEY);
+              localStorage.removeItem(AUTH_TOKEN_KEY);
+            }
+          } catch {
+            localStorage.removeItem(AUTH_USER_KEY);
+            localStorage.removeItem(AUTH_TOKEN_KEY);
+          }
+        }
+      } catch (err) {
+        console.warn('Auth session restoration error:', err);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (e) {
-      console.warn('Auth state load error:', e);
-      setUser(INITIAL_USERS[0]);
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    initializeAuth();
   }, []);
 
-  const login = async (emailOrPhone: string, password: string, requestedRole?: UserRole): Promise<boolean> => {
+  const login = async (
+    credentials: LoginCredentials
+  ): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
     try {
       setIsLoading(true);
-      const res = await authApi.login(emailOrPhone, password, requestedRole);
-      if (res.user) {
+      const res: AuthResponse = await authApi.login(credentials);
+
+      if (res.user && res.token) {
+        // Enforce role validity
+        if (res.user.role !== 'farmer' && res.user.role !== 'officer') {
+          return { success: false, error: 'Unauthorized role assignment received.' };
+        }
+
         setUser(res.user);
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(res.user));
-        localStorage.setItem('crop_nexus_auth_token', res.token);
-        return true;
+        localStorage.setItem(AUTH_TOKEN_KEY, res.token);
+        return { success: true, role: res.user.role };
       }
-      return false;
-    } catch {
-      return false;
+      return { success: false, error: 'Invalid response from authentication service.' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Login failed. Please verify your credentials.' };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (data: { name: string; email: string; phone: string; role: 'farmer' | 'officer'; district: string; village?: string }): Promise<boolean> => {
+  const register = async (
+    data: FarmerRegistrationData
+  ): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
     try {
       setIsLoading(true);
-      const res = await authApi.register(data);
-      if (res.user) {
+      const res: AuthResponse = await authApi.registerFarmer(data);
+
+      if (res.user && res.token) {
         setUser(res.user);
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(res.user));
-        localStorage.setItem('crop_nexus_auth_token', res.token);
-        return true;
+        localStorage.setItem(AUTH_TOKEN_KEY, res.token);
+        return { success: true, role: res.user.role };
       }
-      return false;
-    } catch {
-      return false;
+      return { success: false, error: 'Could not complete registration at this time.' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Registration failed.' };
     } finally {
       setIsLoading(false);
     }
   };
 
   const logout = () => {
+    authApi.logout();
     setUser(null);
-    localStorage.removeItem(AUTH_USER_KEY);
-    localStorage.removeItem('crop_nexus_auth_token');
   };
 
-  const switchRole = (newRole: UserRole) => {
-    const targetUser = INITIAL_USERS.find(u => u.role === newRole) || {
-      id: `usr-${newRole}-99`,
-      name: `Demo ${newRole.charAt(0).toUpperCase() + newRole.slice(1)}`,
-      email: `${newRole}@cropnexus.demo`,
-      phone: '+91 98000 00000',
-      role: newRole,
-      district: 'Kolhapur',
-      createdAt: new Date().toISOString()
-    };
-    setUser(targetUser);
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(targetUser));
-  };
-
-  const toggleDemoMode = () => {
-    setIsDemoMode(prev => {
-      const next = !prev;
-      localStorage.setItem(DEMO_MODE_KEY, String(next));
-      return next;
-    });
-  };
-
-  const role: UserRole = user?.role || 'farmer';
+  const role: UserRole | null = user?.role || null;
   const isAuthenticated = !!user;
 
   return (
@@ -125,12 +115,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         role,
         isAuthenticated,
         isLoading,
-        isDemoMode,
-        toggleDemoMode,
         login,
         register,
         logout,
-        switchRole,
       }}
     >
       {children}
@@ -145,3 +132,5 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+export default AuthContext;

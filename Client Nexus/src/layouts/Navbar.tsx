@@ -3,30 +3,30 @@ import { Link, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/common/Logo';
 import { Button } from '@/components/common/Button';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from '@/i18n/LanguageContext';
+import { LanguageSelector } from '@/components/common/LanguageSelector';
 import { Menu, X, ArrowRight, UserCircle2, LayoutDashboard } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { isAuthenticated, user, role } = useAuth();
+  const { t } = useTranslation();
 
   const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Farmer Portal', href: '/farmer' },
-    { label: 'Claim Tracking', href: '/claims' },
-    { label: 'Recovery Advisor', href: '/recovery' },
-    { label: 'Weather Alerts', href: '/weather' },
-    { label: 'Officer Desk', href: '/officer' },
+    { label: t('nav.home', 'Home'), href: '/' },
+    { label: t('nav.farmerPortal', 'Farmer Portal'), href: '/farmer' },
+    { label: t('nav.claimTracking', 'Claim Tracking'), href: '/claims' },
+    { label: t('nav.recovery', 'Recovery Guidance'), href: '/recovery' },
+    { label: t('nav.officerDesk', 'Officer Desk'), href: '/officer' },
   ];
 
   const getDashboardLink = () => {
-    if (role === 'admin') return '/admin';
-    if (role === 'officer') return '/officer';
-    return '/farmer';
+    return role === 'officer' ? '/officer' : '/farmer';
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 no-print transition-all">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 no-print transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
@@ -42,9 +42,9 @@ export const Navbar: React.FC = () => {
                 <Link
                   key={link.href}
                   to={link.href}
-                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold transition-colors ${
                     isActive
-                      ? 'text-emerald-700 bg-emerald-50/80 font-semibold'
+                      ? 'text-emerald-800 bg-emerald-50 font-bold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
                   }`}
                 >
@@ -56,6 +56,8 @@ export const Navbar: React.FC = () => {
 
           {/* Right Action Buttons */}
           <div className="hidden sm:flex items-center gap-3">
+            <LanguageSelector variant="pill" />
+
             {isAuthenticated ? (
               <div className="flex items-center gap-2">
                 <Link to={getDashboardLink()}>
@@ -64,22 +66,22 @@ export const Navbar: React.FC = () => {
                     variant="primary"
                     leftIcon={<LayoutDashboard className="w-4 h-4" />}
                   >
-                    Open Dashboard
+                    {t('nav.dashboard', 'Workspace')}
                   </Button>
                 </Link>
                 <Link
                   to="/profile"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors"
                 >
-                  <UserCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>{user?.name.split(' ')[0]}</span>
+                  <UserCircle2 className="w-4 h-4 text-emerald-700" />
+                  <span>{user?.name ? user.name.split(' ')[0] : 'User'}</span>
                 </Link>
               </div>
             ) : (
-              <>
+              <div className="flex items-center gap-2">
                 <Link to="/login">
                   <Button variant="outline" size="sm">
-                    Log In
+                    {t('nav.login', 'Log In')}
                   </Button>
                 </Link>
                 <Link to="/register">
@@ -88,18 +90,19 @@ export const Navbar: React.FC = () => {
                     size="sm"
                     rightIcon={<ArrowRight className="w-4 h-4" />}
                   >
-                    Register
+                    {t('nav.register', 'Register')}
                   </Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
 
-          {/* Mobile menu trigger */}
-          <div className="flex md:hidden items-center">
+          {/* Mobile menu trigger + mobile language toggle */}
+          <div className="flex sm:hidden items-center gap-2">
+            <LanguageSelector variant="pill" />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -110,17 +113,17 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-6 space-y-3">
+        <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
           <div className="space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block px-3 py-2.5 rounded-xl text-sm font-medium ${
+                className={`block px-3.5 py-3 rounded-xl text-sm font-semibold min-h-[44px] flex items-center ${
                   location.pathname === link.href
-                    ? 'text-emerald-700 bg-emerald-50 font-semibold'
-                    : 'text-slate-600 hover:bg-slate-50'
+                    ? 'text-emerald-800 bg-emerald-50 font-bold'
+                    : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 {link.label}
@@ -128,23 +131,23 @@ export const Navbar: React.FC = () => {
             ))}
           </div>
 
-          <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
             {isAuthenticated ? (
               <Link to={getDashboardLink()} onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full" size="md" leftIcon={<LayoutDashboard className="w-4 h-4" />}>
-                  Go to Dashboard
+                  {t('nav.dashboard', 'Go to Dashboard')}
                 </Button>
               </Link>
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full" size="md">
-                    Log In
+                    {t('nav.login', 'Log In')}
                   </Button>
                 </Link>
                 <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="primary" className="w-full" size="md">
-                    Register
+                    {t('nav.register', 'Register')}
                   </Button>
                 </Link>
               </div>

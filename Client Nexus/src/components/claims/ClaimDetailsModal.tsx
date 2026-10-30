@@ -5,6 +5,7 @@ import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { ClaimStatusTimeline } from './ClaimStatusTimeline';
 import { formatDate, formatCurrencyINR, formatArea, getDamageCauseLabel } from '@/utils/formatters';
+import { useTranslation } from '@/i18n/LanguageContext';
 import {
   MapPin,
   Calendar,
@@ -17,6 +18,8 @@ import {
   Phone
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { RecoveryProgressReviewModal } from '@/components/recovery/RecoveryProgressReviewModal';
+import { TrendingUp } from 'lucide-react';
 
 interface ClaimDetailsModalProps {
   claim: ClaimRecord | null;
@@ -28,19 +31,22 @@ interface ClaimDetailsModalProps {
 export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
   claim,
   isOpen,
-  onClose,
-  onUpdateStatus
+  onClose
 }) => {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [showRecoveryReview, setShowRecoveryReview] = useState(false);
+  const { t } = useTranslation();
 
   if (!claim) return null;
+
+  const hasSanctionedAmount = claim.status === 'approved' && Boolean(claim.sanctionedCompensationAmount);
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Claim ${claim.claimNumber}`}
-      description={`Registered on ${formatDate(claim.submissionDate)}`}
+      title={`${t('claims.modal.title', 'Damage Report')} ${claim.claimNumber}`}
+      description={`${t('claims.card.reportedDate', 'Submitted')}: ${formatDate(claim.submissionDate)}`}
       maxWidth="3xl"
       footer={
         <div className="flex flex-wrap items-center justify-between w-full gap-2">
@@ -48,18 +54,27 @@ export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
             {claim.status === 'panchanama_drafted' || claim.status === 'verified' || claim.status === 'approved' ? (
               <Link to={`/officer/panchanama?claimId=${claim.id}`}>
                 <Button size="sm" variant="secondary" leftIcon={<FileSpreadsheet className="w-4 h-4" />}>
-                  View Draft e-Panchanama
+                  {t('nav.panchanama', 'View Draft e-Panchanama')}
                 </Button>
               </Link>
             ) : null}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowRecoveryReview(true)}
+              leftIcon={<TrendingUp className="w-4 h-4 text-emerald-700" />}
+              className="text-xs"
+            >
+              Recovery Progress
+            </Button>
           </div>
-          <Button variant="outline" size="sm" onClick={onClose}>
-            Close
+          <Button variant="outline" size="sm" onClick={onClose} className="min-h-[40px]">
+            {t('common.close', 'Close')}
           </Button>
         </div>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Header Summary Banner */}
         <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1">
@@ -69,15 +84,21 @@ export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
               <Badge compensationStatus={claim.compensationStatus} />
             </div>
             <p className="text-xs text-emerald-800">
-              Crop Type: <span className="font-semibold">{claim.cropType}</span> • Estimated Loss:{' '}
+              {t('report.crop.type', 'Crop Classification')}: <span className="font-semibold">{claim.cropType}</span> • {t('report.crop.lossPercentage', 'Estimated Loss')}:{' '}
               <span className="font-semibold">{claim.estimatedLossPercentage}%</span>
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs uppercase font-bold text-emerald-800">Relief Estimate</p>
-            <p className="text-lg font-black text-emerald-900">
-              {formatCurrencyINR(claim.sanctionedCompensationAmount || claim.estimatedCompensationAmount)}
-            </p>
+            <p className="text-xs uppercase font-bold text-emerald-800">Compensation Status</p>
+            {hasSanctionedAmount ? (
+              <p className="text-lg font-black text-emerald-900">
+                {formatCurrencyINR(claim.sanctionedCompensationAmount!)}
+              </p>
+            ) : (
+              <p className="text-xs font-bold text-slate-600 bg-white px-2 py-1 rounded border border-emerald-200">
+                Subject to Field Verification
+              </p>
+            )}
           </div>
         </div>
 
@@ -86,7 +107,7 @@ export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
           {/* Farmer & Location details */}
           <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-2.5">
             <h4 className="font-bold text-slate-900 uppercase tracking-wider text-xs flex items-center gap-1.5 text-slate-700">
-              <User className="w-3.5 h-3.5" /> Farmer & Land Specifics
+              <User className="w-3.5 h-3.5" /> Farmer & Land Record
             </h4>
             <div className="grid grid-cols-2 gap-2 pt-1">
               <div>
@@ -96,7 +117,7 @@ export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
               <div>
                 <span className="text-slate-500 block">Contact Phone</span>
                 <span className="font-semibold text-slate-800 flex items-center gap-1">
-                  <Phone className="w-3 h-3 text-emerald-600" /> {claim.farmerPhone}
+                  <Phone className="w-3 h-3 text-emerald-700" /> {claim.farmerPhone}
                 </span>
               </div>
               <div>
@@ -104,7 +125,7 @@ export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
                 <span className="font-semibold text-slate-800">{claim.surveyNumber}</span>
               </div>
               <div>
-                <span className="text-slate-500 block">Total Plot Area</span>
+                <span className="text-slate-500 block">Total Plot Holding</span>
                 <span className="font-semibold text-slate-800">{formatArea(claim.totalLandAreaAcre)}</span>
               </div>
               <div className="col-span-2">
@@ -120,7 +141,7 @@ export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
           {/* Calamity & Affected Info */}
           <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-2.5">
             <h4 className="font-bold text-slate-900 uppercase tracking-wider text-xs flex items-center gap-1.5 text-slate-700">
-              <AlertTriangle className="w-3.5 h-3.5" /> Calamity & Impact Details
+              <AlertTriangle className="w-3.5 h-3.5" /> Calamity & Assessment
             </h4>
             <div className="grid grid-cols-2 gap-2 pt-1">
               <div>
@@ -142,7 +163,7 @@ export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
               <div>
                 <span className="text-slate-500 block">Assigned Officer</span>
                 <span className="font-semibold text-slate-800">
-                  {claim.officerAssignedName || 'Awaiting Assignment'}
+                  {claim.officerAssignedName || 'Circle Inspector'}
                 </span>
               </div>
             </div>
@@ -151,7 +172,7 @@ export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
 
         {/* Damage Description */}
         <div className="bg-white rounded-2xl p-4 border border-slate-200 text-xs">
-          <h4 className="font-bold text-slate-900 mb-1">Farmer's Damage Narrative</h4>
+          <h4 className="font-bold text-slate-900 mb-1">Farmer's Calamity Description</h4>
           <p className="text-slate-600 leading-relaxed italic bg-slate-50 p-3 rounded-xl border border-slate-100">
             "{claim.damageDescription}"
           </p>
@@ -161,7 +182,7 @@ export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
         {claim.photos && claim.photos.length > 0 && (
           <div>
             <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5" /> Supporting Field Photographs ({claim.photos.length})
+              <ImageIcon className="w-3.5 h-3.5" /> Supporting Field Evidence ({claim.photos.length})
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {claim.photos.map((photo) => (
@@ -192,11 +213,18 @@ export const ClaimDetailsModal: React.FC<ClaimDetailsModalProps> = ({
         {/* Claim Status Progress Stepper & Audit Log */}
         <div className="pt-2 border-t border-slate-200">
           <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700 mb-1 flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Verification & Approval Timeline
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Verification & Progress Milestones
           </h4>
           <ClaimStatusTimeline currentStatus={claim.status} statusHistory={claim.statusHistory} />
         </div>
       </div>
+
+      {/* Recovery Progress Review Modal */}
+      <RecoveryProgressReviewModal
+        claim={claim}
+        isOpen={showRecoveryReview}
+        onClose={() => setShowRecoveryReview(false)}
+      />
 
       {/* Enlarged Photo Modal */}
       {selectedPhoto && (

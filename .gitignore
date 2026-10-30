@@ -8,3 +8,7 @@ target/
 .idea/
 *.iml
 package-lock.backup.json
+
+# Backend uploaded files
+nexus-backend/uploads/*
+!nexus-backend/uploads/.gitkeep

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/common/Button';
+import { useTranslation } from '@/i18n/LanguageContext';
 import {
   FilePlus2,
   FileSpreadsheet,
@@ -9,103 +10,129 @@ import {
   ShieldCheck,
   CheckCircle2,
   ArrowRight,
-  Clock
+  Clock,
+  Sparkles
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
-    <div className="space-y-24 pb-20">
+    <div className="space-y-16 sm:space-y-24 pb-20 overflow-x-hidden">
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 sm:pt-20 pb-16 bg-gradient-to-b from-slate-100/70 via-white to-slate-50 border-b border-slate-200">
+      <section className="relative overflow-hidden pt-8 sm:pt-16 pb-12 sm:pb-20 bg-gradient-to-b from-slate-100/70 via-white to-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             {/* Left Copy */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.12]">
-                Digital Transparency in{' '}
-                <span className="text-emerald-800 font-black">Crop Damage</span>{' '}
-                & Relief Assistance
+            <div className="lg:col-span-7 space-y-5 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+                <span>{t('landing.hero.badge', 'Maharashtra Calamity Relief Workflow')}</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15] text-balance">
+                {t('landing.hero.title', 'Transparent Crop Damage Reporting & Relief Verification')}
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-700 max-w-2xl leading-relaxed text-pretty">
-                Empowering farmers to report weather calamities within statutory deadlines, enabling field officers to record GPS spot inspections, compile draft e-Panchanamas, and deliver timely recovery advisories.
+              <p className="text-sm sm:text-base lg:text-lg text-slate-600 max-w-2xl leading-relaxed text-pretty mx-auto lg:mx-0">
+                {t(
+                  'landing.hero.subtitle',
+                  'A mobile-first portal enabling Maharashtra farmers to report disaster crop losses within statutory windows, and assisting agriculture officers in conducting verifiable on-site spot inspections.'
+                )}
               </p>
 
               {/* Primary Call to Actions */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
-                <Link to="/report-damage">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 pt-2">
+                <Link to="/report-damage" className="w-full sm:w-auto">
                   <Button
                     size="lg"
                     variant="primary"
+                    className="w-full sm:w-auto min-h-[48px]"
                     leftIcon={<FilePlus2 className="w-5 h-5" />}
                     rightIcon={<ArrowRight className="w-4 h-4" />}
                   >
-                    Report Crop Damage
+                    {t('landing.hero.ctaReport', 'Report Crop Damage')}
                   </Button>
                 </Link>
-                <Link to="/claims">
-                  <Button size="lg" variant="outline" leftIcon={<Clock className="w-5 h-5 text-slate-600" />}>
-                    Track Claim Status
+                <Link to="/claims" className="w-full sm:w-auto">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full sm:w-auto min-h-[48px]"
+                    leftIcon={<Clock className="w-5 h-5 text-slate-600" />}
+                  >
+                    {t('landing.hero.ctaTrack', 'Track Report Status')}
                   </Button>
                 </Link>
               </div>
 
-              {/* Verified Metrics */}
-              <div className="pt-6 border-t border-slate-200 grid grid-cols-3 gap-6 text-center lg:text-left">
+              {/* Verified Metrics Bar */}
+              <div className="pt-6 border-t border-slate-200 grid grid-cols-3 gap-3 sm:gap-6 text-center lg:text-left">
                 <div>
-                  <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">72 Hrs</p>
-                  <p className="text-xs text-slate-600 font-medium">Spot Intimation Window</p>
+                  <p className="text-xl sm:text-3xl font-extrabold text-slate-900">
+                    {t('landing.metric.window', '72 Hours')}
+                  </p>
+                  <p className="text-xs text-slate-500 font-medium leading-tight mt-0.5">
+                    {t('landing.metric.windowLabel', 'Intimation Window')}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-2xl sm:text-3xl font-extrabold text-emerald-800">100%</p>
-                  <p className="text-xs text-slate-600 font-medium">Digital Verification</p>
+                  <p className="text-xl sm:text-3xl font-extrabold text-emerald-800">
+                    {t('landing.metric.verification', '100% On-Site')}
+                  </p>
+                  <p className="text-xs text-slate-500 font-medium leading-tight mt-0.5">
+                    {t('landing.metric.verificationLabel', 'Field Inspection')}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">0 Pager</p>
-                  <p className="text-xs text-slate-600 font-medium">Draft e-Panchanama</p>
+                  <p className="text-xl sm:text-3xl font-extrabold text-slate-900">
+                    {t('landing.metric.paperless', 'Digital')}
+                  </p>
+                  <p className="text-xs text-slate-500 font-medium leading-tight mt-0.5">
+                    {t('landing.metric.paperlessLabel', 'Draft e-Panchanama')}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Right Live Card Preview (Flat, un-nested layout) */}
-            <div className="lg:col-span-5 relative">
-              <div className="mx-auto max-w-md bg-white rounded-2xl p-6 shadow-lg border border-slate-200 space-y-4">
+            {/* Right Live Sample Card Preview */}
+            <div className="lg:col-span-5 relative w-full">
+              <div className="mx-auto max-w-md bg-white rounded-3xl p-5 sm:p-6 shadow-xl border border-slate-200 space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-700" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 animate-pulse" />
                     <span className="font-bold text-xs uppercase tracking-wider text-slate-900">
                       Sample Verified Record
                     </span>
                   </div>
-                  <span className="text-xs font-mono font-bold text-emerald-900 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-300">
+                  <span className="text-xs font-mono font-bold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
                     CN-2026-MH-1042
                   </span>
                 </div>
 
-                {/* Plot & Crop preview rows without nested card boxes */}
                 <div className="space-y-2 text-xs divide-y divide-slate-100">
-                  <div className="flex justify-between items-center py-1.5">
-                    <span className="text-slate-600 font-medium">Crop Cultivated:</span>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-slate-500 font-medium">Crop Cultivated:</span>
                     <span className="font-bold text-slate-900">Sugarcane (Co-86032)</span>
                   </div>
-                  <div className="flex justify-between items-center py-1.5">
-                    <span className="text-slate-600 font-medium">Survey & Village:</span>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-slate-500 font-medium">Survey & Village:</span>
                     <span className="font-bold text-slate-900">Gut 142/3-B, Shirol</span>
                   </div>
-                  <div className="flex justify-between items-center py-1.5">
-                    <span className="text-slate-600 font-medium">Calamity Type:</span>
-                    <span className="font-bold text-red-800">River Backwater Inundation</span>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-slate-500 font-medium">Calamity Type:</span>
+                    <span className="font-bold text-red-700">Excessive Rainfall (अतिवृष्टी)</span>
                   </div>
-                  <div className="flex justify-between items-center py-1.5">
-                    <span className="text-slate-600 font-medium">Field Verification:</span>
-                    <span className="font-bold text-emerald-800">Assessed: 3.10 Acres</span>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-slate-500 font-medium">Assessed Loss:</span>
+                    <span className="font-bold text-emerald-800">1.50 Acres (65%)</span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-200">
+                <div className="pt-2 border-t border-slate-200">
                   <Link to="/officer/panchanama" className="block">
-                    <Button variant="outline" size="sm" className="w-full text-xs">
-                      Inspect Draft Report Format
+                    <Button variant="outline" size="sm" className="w-full text-xs min-h-[40px]">
+                      View Draft e-Panchanama Preview
                     </Button>
                   </Link>
                 </div>
@@ -115,90 +142,180 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="bg-slate-900 text-white py-14 sm:py-20 border-y border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 space-y-3">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              {t('landing.workflow.title', 'How the Compensation Workflow Works')}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 text-pretty">
+              {t(
+                'landing.workflow.subtitle',
+                'Clear, transparent process from calamity occurrence to government verification'
+              )}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            {/* Step 1 */}
+            <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white font-extrabold text-base flex items-center justify-center shadow-xs">
+                1
+              </div>
+              <h3 className="text-base font-bold text-white">
+                {t('landing.step1.title', '1. Report Damage')}
+              </h3>
+              <p className="text-xs text-slate-300 leading-relaxed text-pretty">
+                {t(
+                  'landing.step1.desc',
+                  'The farmer intimates disaster damage within 72 hours with plot details, crop variety, and field photos.'
+                )}
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white font-extrabold text-base flex items-center justify-center shadow-xs">
+                2
+              </div>
+              <h3 className="text-base font-bold text-white">
+                {t('landing.step2.title', '2. Spot Field Inspection')}
+              </h3>
+              <p className="text-xs text-slate-300 leading-relaxed text-pretty">
+                {t(
+                  'landing.step2.desc',
+                  'Authorized agriculture officers visit the farm, capture GPS coordinates, and evaluate crop damage extent.'
+                )}
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white font-extrabold text-base flex items-center justify-center shadow-xs">
+                3
+              </div>
+              <h3 className="text-base font-bold text-white">
+                {t('landing.step3.title', '3. Compile e-Panchanama')}
+              </h3>
+              <p className="text-xs text-slate-300 leading-relaxed text-pretty">
+                {t(
+                  'landing.step3.desc',
+                  'A standardized digital draft panchanama is compiled with local panchas witnesses and officer observations.'
+                )}
+              </p>
+            </div>
+
+            {/* Step 4 */}
+            <div className="p-5 rounded-2xl bg-slate-800/60 border border-slate-700/60 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white font-extrabold text-base flex items-center justify-center shadow-xs">
+                4
+              </div>
+              <h3 className="text-base font-bold text-white">
+                {t('landing.step4.title', '4. Track Compensation Status')}
+              </h3>
+              <p className="text-xs text-slate-300 leading-relaxed text-pretty">
+                {t(
+                  'landing.step4.desc',
+                  'Farmers track report verification, inspection findings, and official compensation sanction in real time.'
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Core Platform Modules */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Comprehensive Digital Agricultural Governance
+        <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Key Application Modules
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 text-pretty">
-            Designed to bridge the gap between affected cultivators, inspecting agriculture officers, and administrative authorities with verifiable records.
+          <p className="text-xs sm:text-sm text-slate-600 text-pretty">
+            Designed to support Maharashtra cultivators and revenue officers through each stage of disaster relief.
           </p>
         </div>
 
-        {/* Feature Cards with inline icons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {/* Card 1: Damage Reporting */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover:border-emerald-700 transition-colors space-y-3 flex flex-col justify-between">
-            <div className="space-y-3">
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs hover:border-emerald-600 transition-colors space-y-3 flex flex-col justify-between">
+            <div className="space-y-2.5">
               <div className="flex items-center gap-2.5">
                 <FilePlus2 className="w-5 h-5 text-emerald-800 shrink-0" />
-                <h3 className="font-bold text-base text-slate-900">Crop Damage Intimation</h3>
+                <h3 className="font-bold text-base text-slate-900">
+                  {t('nav.reportDamage', 'Crop Damage Intimation')}
+                </h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed text-pretty">
-                Mobile-first reporting for farmers with geotagged photo uploads, 7/12 survey plot numbers, damage cause, and loss estimations.
+                Mobile-first reporting with geotagged photo capture, 7/12 survey numbers, calamity cause, and estimated acreage.
               </p>
             </div>
             <Link
               to="/report-damage"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 hover:text-emerald-950 pt-2"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 hover:text-emerald-950 pt-2 min-h-[44px]"
             >
-              Submit Intimation <ArrowRight className="w-3.5 h-3.5" />
+              Report Loss <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           {/* Card 2: Digital e-Panchanama */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover:border-indigo-700 transition-colors space-y-3 flex flex-col justify-between">
-            <div className="space-y-3">
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs hover:border-indigo-600 transition-colors space-y-3 flex flex-col justify-between">
+            <div className="space-y-2.5">
               <div className="flex items-center gap-2.5">
                 <FileSpreadsheet className="w-5 h-5 text-indigo-800 shrink-0" />
-                <h3 className="font-bold text-base text-slate-900">Draft e-Panchanama</h3>
+                <h3 className="font-bold text-base text-slate-900">
+                  {t('nav.panchanama', 'Draft e-Panchanama')}
+                </h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed text-pretty">
-                Automated compilation of spot inspection observations, panchas witness details, and printable draft records for official verification.
+                Standardized draft report compiled from spot survey observations, witness statements, and GPS bounds.
               </p>
             </div>
             <Link
               to="/officer/panchanama"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-800 hover:text-indigo-950 pt-2"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-800 hover:text-indigo-950 pt-2 min-h-[44px]"
             >
-              Explore Drafts <ArrowRight className="w-3.5 h-3.5" />
+              Inspect Drafts <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* Card 3: Crop Recovery Advisor */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover:border-amber-700 transition-colors space-y-3 flex flex-col justify-between">
-            <div className="space-y-3">
+          {/* Card 3: Crop Recovery Guidance */}
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs hover:border-amber-600 transition-colors space-y-3 flex flex-col justify-between">
+            <div className="space-y-2.5">
               <div className="flex items-center gap-2.5">
                 <Activity className="w-5 h-5 text-amber-800 shrink-0" />
-                <h3 className="font-bold text-base text-slate-900">Crop Recovery Advisor</h3>
+                <h3 className="font-bold text-base text-slate-900">
+                  {t('nav.recovery', 'Recovery Guidance')}
+                </h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed text-pretty">
-                Actionable agronomic guidance for surviving crops, fertilizer replenishment, water drainage, and pest mitigation.
+                General agronomic advisories for draining waterlogged fields, nutrient spray replenishment, and disease mitigation.
               </p>
             </div>
             <Link
               to="/recovery"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-950 pt-2"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-950 pt-2 min-h-[44px]"
             >
-              Get Guidance <ArrowRight className="w-3.5 h-3.5" />
+              View Guidance <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           {/* Card 4: Weather Alerts */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs hover:border-blue-700 transition-colors space-y-3 flex flex-col justify-between">
-            <div className="space-y-3">
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs hover:border-blue-600 transition-colors space-y-3 flex flex-col justify-between">
+            <div className="space-y-2.5">
               <div className="flex items-center gap-2.5">
                 <CloudSun className="w-5 h-5 text-blue-800 shrink-0" />
-                <h3 className="font-bold text-base text-slate-900">Agromet Weather Alerts</h3>
+                <h3 className="font-bold text-base text-slate-900">
+                  {t('nav.weather', 'Agromet Weather Alerts')}
+                </h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed text-pretty">
-                Timely meteorological alerts for torrential rainfall, squalls, and hailstorms with practical preventive farming tips.
+                Meteorological alerts for squalls, heavy rainfall, and hailstorms with preventive farming tips.
               </p>
             </div>
             <Link
               to="/weather"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-800 hover:text-blue-950 pt-2"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-800 hover:text-blue-950 pt-2 min-h-[44px]"
             >
               Check Weather <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -206,100 +323,39 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* How It Works Section (Strict Heading Hierarchy h2 -> h3) */}
-      <section className="bg-slate-900 text-white py-16 border-y border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-            <h2 className="text-3xl font-extrabold tracking-tight text-white">How Crop Nexus Works</h2>
-            <p className="text-sm text-slate-300 text-pretty">
-              A structured lifecycle from the moment a natural calamity strikes to digital compensation assessment.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Step 1 */}
-            <div className="space-y-3">
-              <div className="w-9 h-9 rounded-full bg-emerald-700 text-white font-bold text-sm flex items-center justify-center">
-                1
-              </div>
-              <h3 className="text-base font-bold text-white">Intimate Calamity</h3>
-              <p className="text-xs text-slate-300 leading-relaxed text-pretty">
-                Farmer submits plot details, crop variety, damage photographs, and approximate acreage affected within 72 hours.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="space-y-3">
-              <div className="w-9 h-9 rounded-full bg-emerald-700 text-white font-bold text-sm flex items-center justify-center">
-                2
-              </div>
-              <h3 className="text-base font-bold text-white">Spot Field Survey</h3>
-              <p className="text-xs text-slate-300 leading-relaxed text-pretty">
-                Agriculture officer visits the plot, records GPS coordinates, interviews local panchas, and verifies crop loss.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="space-y-3">
-              <div className="w-9 h-9 rounded-full bg-emerald-700 text-white font-bold text-sm flex items-center justify-center">
-                3
-              </div>
-              <h3 className="text-base font-bold text-white">Draft e-Panchanama</h3>
-              <p className="text-xs text-slate-300 leading-relaxed text-pretty">
-                A standardized digital draft report is compiled with plot boundaries, witness signatures, and loss percentages.
-              </p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="space-y-3">
-              <div className="w-9 h-9 rounded-full bg-emerald-700 text-white font-bold text-sm flex items-center justify-center">
-                4
-              </div>
-              <h3 className="text-base font-bold text-white">Transparent Tracking</h3>
-              <p className="text-xs text-slate-300 leading-relaxed text-pretty">
-                Both farmer and administrators monitor stage progression from review to relief recommendation in real time.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Farmer Benefits Section (Accessible Contrast) */}
+      {/* Farmer & Officer Fast Access Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-slate-900 text-white rounded-2xl p-8 sm:p-12 border border-slate-800 shadow-md">
+        <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-10 border border-slate-800 shadow-lg">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div className="space-y-4">
-              <h2 className="text-2xl sm:text-3xl font-extrabold leading-tight text-white">
-                Designed for Reliability in the Field
+            <div className="space-y-3">
+              <h2 className="text-xl sm:text-2xl font-black text-white">
+                {t('landing.benefits.title', 'Built for Maharashtra Cultivators')}
               </h2>
-              <p className="text-sm text-slate-300 leading-relaxed text-pretty">
-                Crop Nexus provides clear status accountability so cultivators know exactly when inspections are scheduled, who is visiting their land, and what recovery actions to take to save their harvest.
-              </p>
-              <div className="space-y-2 pt-2">
-                <div className="flex items-center gap-2.5 text-xs text-slate-200">
+              <div className="space-y-2 text-xs text-slate-300">
+                <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Permanent audit trail for every submitted intimation</span>
+                  <span>{t('landing.benefits.point1', 'Timely submission before statutory relief deadlines')}</span>
                 </div>
-                <div className="flex items-center gap-2.5 text-xs text-slate-200">
+                <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Downloadable e-Panchanama drafts for documentation</span>
+                  <span>{t('landing.benefits.point2', 'Verifiable geotagged photos and 7/12 land record integration')}</span>
                 </div>
-                <div className="flex items-center gap-2.5 text-xs text-slate-200">
+                <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Agronomic guidelines tailored to crop damage stage</span>
+                  <span>{t('landing.benefits.point3', 'Direct SMS and digital updates for every status milestone')}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-end">
-              <Link to="/farmer">
-                <Button size="lg" className="w-full sm:w-auto bg-emerald-800 text-white hover:bg-emerald-900">
-                  Open Farmer Workspace
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
+              <Link to="/farmer" className="w-full sm:w-auto">
+                <Button size="md" className="w-full sm:w-auto min-h-[44px] bg-emerald-800 hover:bg-emerald-900 text-white">
+                  {t('landing.cta.farmerBtn', 'Enter Farmer Portal')}
                 </Button>
               </Link>
-              <Link to="/officer">
-                <Button size="lg" variant="dark-outline" className="w-full sm:w-auto">
-                  Officer Inspection Desk
+              <Link to="/officer" className="w-full sm:w-auto">
+                <Button size="md" variant="outline" className="w-full sm:w-auto min-h-[44px] bg-white text-slate-900 hover:bg-slate-100 border-slate-300">
+                  {t('landing.cta.officerBtn', 'Officer Inspection Desk')}
                 </Button>
               </Link>
             </div>

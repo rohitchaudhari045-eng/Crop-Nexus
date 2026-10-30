@@ -1,6 +1,27 @@
 // Crop Nexus TypeScript Type Definitions
 
-export type UserRole = 'farmer' | 'officer' | 'admin';
+export type UserRole = 'farmer' | 'officer';
+
+export interface LoginCredentials {
+  emailOrPhone: string;
+  password?: string;
+}
+
+export interface FarmerRegistrationData {
+  name: string;
+  email: string;
+  phone: string;
+  district: string;
+  taluka?: string;
+  village: string;
+  preferredLanguage?: 'en' | 'mr';
+  password?: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
 
 export interface User {
   id: string;
@@ -10,7 +31,9 @@ export interface User {
   role: UserRole;
   avatarUrl?: string;
   district?: string;
+  taluka?: string;
   village?: string;
+  preferredLanguage?: 'en' | 'mr';
   aadhaarLast4?: string;
   assignedJurisdiction?: string; // for officers
   badgeNumber?: string; // for officers
@@ -30,6 +53,7 @@ export type DamageCause =
 export type ClaimStatus = 
   | 'submitted' 
   | 'under_review' 
+  | 'additional_info_required'
   | 'inspection_scheduled' 
   | 'inspected' 
   | 'panchanama_drafted' 
@@ -116,6 +140,13 @@ export interface InspectionRecord {
   recommendation: 'approve_full' | 'approve_partial' | 'reject' | 're_inspection_needed';
   recommendedCompensationAmount?: number;
   status: 'draft' | 'submitted' | 'finalized';
+  nextStatus?: ClaimStatus;
+  officerRemarks?: string;
+  claimStatus?: ClaimStatus;
+  compensationStatus?: CompensationStatus;
+  generatePanchanama?: boolean;
+  panchanamaId?: string;
+  panchanamaReportNumber?: string;
   createdAt: string;
 }
 
@@ -196,15 +227,22 @@ export interface CropRecoveryItem {
 export interface CropRecoveryProgressRecord {
   id: string;
   claimId?: string;
+  claimNumber?: string;
   farmerId: string;
+  farmerName?: string;
   cropName: string;
+  calamityType?: string;
+  recoveryPlanKey?: string;
   stageName: string;
   updateDate: string;
   notes: string;
+  observations?: string;
+  completedSteps?: string;
   healthRating: number; // 1 to 5 stars
   beforePhotoUrl?: string;
   afterPhotoUrl?: string;
   milestoneReached: boolean;
+  createdAt?: string;
 }
 
 export interface NotificationItem {
@@ -216,20 +254,6 @@ export interface NotificationItem {
   read: boolean;
   createdAt: string;
   actionUrl?: string;
-}
-
-export interface AdminAnalyticsSummary {
-  totalClaims: number;
-  pendingInspection: number;
-  inspectedClaims: number;
-  approvedClaims: number;
-  totalFarmers: number;
-  totalOfficers: number;
-  estimatedTotalLossAcre: number;
-  claimsByCrop: { crop: string; count: number; lossAcre: number }[];
-  claimsByCause: { cause: string; count: number }[];
-  claimsByStatus: { status: string; count: number }[];
-  monthlyTrend: { month: string; claims: number; compensationLaksh: number }[];
 }
 
 export interface ApiResponse<T> {

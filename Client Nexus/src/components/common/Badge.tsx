@@ -9,7 +9,7 @@ interface BadgeProps {
   className?: string;
   claimStatus?: ClaimStatus;
   compensationStatus?: CompensationStatus;
-  role?: UserRole;
+  role?: UserRole | null;
 }
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -45,8 +45,7 @@ export const Badge: React.FC<BadgeProps> = ({
   if (role) {
     const roleConfig = {
       farmer: 'bg-emerald-50 text-emerald-800 border-emerald-200',
-      officer: 'bg-indigo-50 text-indigo-800 border-indigo-200',
-      admin: 'bg-purple-50 text-purple-800 border-purple-200'
+      officer: 'bg-indigo-50 text-indigo-800 border-indigo-200'
     }[role];
 
     return (

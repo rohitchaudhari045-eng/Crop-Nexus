@@ -28,7 +28,8 @@ export const ClaimStatusTimeline: React.FC<ClaimStatusTimelineProps> = ({
   currentStatus,
   statusHistory = []
 }) => {
-  const currentStepIndex = STEPS.indexOf(currentStatus);
+  const isAdditionalInfo = currentStatus === 'additional_info_required';
+  const currentStepIndex = isAdditionalInfo ? 1 : STEPS.indexOf(currentStatus);
   const isRejected = currentStatus === 'rejected';
 
   return (
@@ -86,6 +87,13 @@ export const ClaimStatusTimeline: React.FC<ClaimStatusTimelineProps> = ({
           );
         })}
       </div>
+
+      {isAdditionalInfo && (
+        <div className="mb-6 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+          <span>Additional Information Required: Please review officer notes below and submit the requested documents.</span>
+        </div>
+      )}
 
       {isRejected && (
         <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-center gap-2">

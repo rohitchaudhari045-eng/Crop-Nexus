@@ -7,8 +7,7 @@ import {
   WeatherForecastDay,
   CropRecoveryItem,
   CropRecoveryProgressRecord,
-  NotificationItem,
-  AdminAnalyticsSummary
+  NotificationItem
 } from '@/types';
 
 export const INITIAL_USERS: User[] = [
@@ -33,15 +32,6 @@ export const INITIAL_USERS: User[] = [
     badgeNumber: 'AGR-INSP-449',
     district: 'Kolhapur',
     createdAt: '2025-11-10T11:00:00Z'
-  },
-  {
-    id: 'usr-admin-01',
-    name: 'Anjali Shinde',
-    email: 'admin.anjali@cropnexus.demo',
-    phone: '+91 99880 77665',
-    role: 'admin',
-    district: 'Kolhapur HQ',
-    createdAt: '2025-08-01T08:00:00Z'
   }
 ];
 
@@ -602,43 +592,3 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     actionUrl: '/claims/clm-001'
   }
 ];
-
-export const INITIAL_ANALYTICS: AdminAnalyticsSummary = {
-  totalClaims: 148,
-  pendingInspection: 38,
-  inspectedClaims: 74,
-  approvedClaims: 31,
-  totalFarmers: 420,
-  totalOfficers: 18,
-  estimatedTotalLossAcre: 624.5,
-  claimsByCrop: [
-    { crop: 'Sugarcane', count: 54, lossAcre: 240.2 },
-    { crop: 'Cotton', count: 42, lossAcre: 185.0 },
-    { crop: 'Soybean', count: 28, lossAcre: 110.8 },
-    { crop: 'Paddy', count: 16, lossAcre: 64.5 },
-    { crop: 'Others', count: 8, lossAcre: 24.0 }
-  ],
-  claimsByCause: [
-    { cause: 'Heavy Rainfall', count: 68 },
-    { cause: 'Hailstorm', count: 34 },
-    { cause: 'Flooding', count: 26 },
-    { cause: 'Strong Winds', count: 12 },
-    { cause: 'Others', count: 8 }
-  ],
-  claimsByStatus: [
-    { status: 'Submitted', count: 22 },
-    { status: 'Under Review', count: 16 },
-    { status: 'Scheduled', count: 18 },
-    { status: 'Inspected', count: 32 },
-    { status: 'Draft Panchanama', count: 24 },
-    { status: 'Approved', count: 31 },
-    { status: 'Rejected', count: 5 }
-  ],
-  monthlyTrend: [
-    { month: 'Jun', claims: 12, compensationLaksh: 4.8 },
-    { month: 'Jul', claims: 34, compensationLaksh: 14.2 },
-    { month: 'Aug', claims: 52, compensationLaksh: 22.6 },
-    { month: 'Sep', claims: 68, compensationLaksh: 31.4 },
-    { month: 'Oct', claims: 48, compensationLaksh: 21.0 }
-  ]
-};

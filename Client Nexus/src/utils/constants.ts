@@ -116,13 +116,14 @@ export const DAMAGE_CAUSES: { value: DamageCause; label: string; icon: string; d
 ];
 
 export const CLAIM_STATUS_MAP: Record<ClaimStatus, { label: string; color: string; bg: string; step: number }> = {
-  submitted: { label: 'Submitted', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', step: 1 },
-  under_review: { label: 'Under Review', color: 'text-purple-700', bg: 'bg-purple-50 border-purple-200', step: 2 },
-  inspection_scheduled: { label: 'Inspection Scheduled', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', step: 3 },
-  inspected: { label: 'Inspected', color: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-200', step: 4 },
+  submitted: { label: 'Application Submitted', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', step: 1 },
+  under_review: { label: 'Under Initial Review', color: 'text-purple-700', bg: 'bg-purple-50 border-purple-200', step: 2 },
+  additional_info_required: { label: 'Additional Information Required', color: 'text-amber-800', bg: 'bg-amber-100 border-amber-300', step: 2 },
+  inspection_scheduled: { label: 'Field Inspection Pending', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', step: 3 },
+  inspected: { label: 'Field Inspection Completed', color: 'text-indigo-700', bg: 'bg-indigo-50 border-indigo-200', step: 4 },
   panchanama_drafted: { label: 'e-Panchanama Drafted', color: 'text-cyan-700', bg: 'bg-cyan-50 border-cyan-200', step: 5 },
-  verified: { label: 'Record Verified', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', step: 6 },
-  approved: { label: 'Approved for Relief', color: 'text-green-800', bg: 'bg-green-100 border-green-300', step: 7 },
+  verified: { label: 'Under Eligibility Assessment', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', step: 6 },
+  approved: { label: 'Approved', color: 'text-green-800', bg: 'bg-green-100 border-green-300', step: 7 },
   rejected: { label: 'Rejected', color: 'text-red-700', bg: 'bg-red-50 border-red-200', step: 0 }
 };
 
